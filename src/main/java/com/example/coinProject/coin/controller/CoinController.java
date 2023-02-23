@@ -1,16 +1,16 @@
 package com.example.coinProject.coin.controller;
 
-import com.example.coinProject.coin.dto.CoinResponse;
+import com.example.coinProject.coin.domain.Price;
+import com.example.coinProject.coin.dto.coin.CoinResponse;
+import com.example.coinProject.coin.dto.price.PriceResponse;
 import com.example.coinProject.coin.service.CoinService;
 
 import java.util.List;
+
+import com.example.coinProject.coin.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/coin")
@@ -20,13 +20,20 @@ public class CoinController {
 
     private final CoinService coinService;
 
+    private final PriceService priceService;
+
     @GetMapping
     public List<CoinResponse> getMarket() {
         return coinService.getCoinResponse();
     }
 
-    @GetMapping("/{unit}")
-    public List<CoinResponse> getCoinPrice(@PathVariable("unit") int unit, @RequestParam(name = "market") String market) {
-        return coinService.getCoinPrice(unit, market);
+    @GetMapping("/saveCoin")
+    public List<CoinResponse> saveMarket(){
+        return coinService.saveMarket();
     }
+
+
+
+
+
 }

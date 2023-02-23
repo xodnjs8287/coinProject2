@@ -21,12 +21,11 @@ public class Coin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer coinNo;
-    @Column(nullable = false, unique = true)
-    private String market;
-    @Column(nullable = false, unique = true)
-    private String korName;
-    @Column(nullable = false, unique = true)
-    private String engName;
     @Column(nullable = false)
-    private BigDecimal tradePrice;
+    private String market;
+    @Column(nullable = false)
+    private String korName;
+    @Column(nullable = false)
+    private String engName;
+
 }

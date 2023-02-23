@@ -1,4 +1,4 @@
-package com.example.coinProject.coin.dto;
+package com.example.coinProject.coin.dto.coin;
 
 import com.example.coinProject.coin.domain.Coin;
 import java.math.BigDecimal;
@@ -13,14 +13,12 @@ public class CoinRequest {
     private String market;
     private String korName;
     private String engName;
-    private BigDecimal tradePrice;
 
     public Coin toCoin() {
         return Coin.builder()
             .market(market)
             .korName(korName)
             .engName(engName)
-            .tradePrice(tradePrice)
             .build();
     }
 }
