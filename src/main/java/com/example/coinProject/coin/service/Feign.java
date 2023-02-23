@@ -1,10 +1,9 @@
 package com.example.coinProject.coin.service;
 
-import com.example.coinProject.coin.domain.Price;
 import com.example.coinProject.coin.dto.coin.CoinResponse;
+import com.example.coinProject.price.dto.PriceResponse;
 import java.util.List;
 
-import com.example.coinProject.coin.dto.price.PriceResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,5 +16,7 @@ public interface Feign {
     List<CoinResponse> getMarketCode();
 
     @GetMapping("/candles/minutes/{unit}")
-    List<PriceResponse> getTradePrice(@PathVariable("unit") int unit, @RequestParam(name = "market") String market);
+    PriceResponse getTradePrice(@PathVariable("unit") int unit,
+        @RequestParam(name = "market") String market,
+        @RequestParam(name = "to") String time);
 }
