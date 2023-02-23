@@ -1,13 +1,10 @@
 package com.example.coinProject.coin.controller;
 
-import com.example.coinProject.coin.domain.Price;
 import com.example.coinProject.coin.dto.coin.CoinResponse;
-import com.example.coinProject.coin.dto.price.PriceResponse;
 import com.example.coinProject.coin.service.CoinService;
 
 import java.util.List;
 
-import com.example.coinProject.coin.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class CoinController {
 
     private final CoinService coinService;
-
-    private final PriceService priceService;
 
     @GetMapping
     public List<CoinResponse> getMarket() {
