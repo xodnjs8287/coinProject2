@@ -16,7 +16,7 @@ public interface Feign {
     List<CoinResponse> getMarketCode();
 
     @GetMapping("/candles/minutes/{unit}")
-    PriceResponse getTradePrice(@PathVariable("unit") int unit,
+    List<PriceResponse> getTradePrice(@PathVariable("unit") int unit,
         @RequestParam(name = "market") String market,
         @RequestParam(name = "to") String time);
 }

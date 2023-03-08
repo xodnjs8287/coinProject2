@@ -4,15 +4,17 @@ import com.example.coinProject.coin.LimitedQueue;
 import com.example.coinProject.coin.domain.Coin;
 import com.example.coinProject.coin.repository.CoinRepository;
 import com.example.coinProject.coin.service.Feign;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Queue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Queue;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,21 +32,28 @@ public class PriceService {
     @Transactional
     public Double getRsi() {
         List<Coin> coins = coinRepository.findAll();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime yesterday = now.minusDays(1);
+        String now = LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
+
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        String yesterday2 = yesterday.format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
 
         for (Coin coin : coins) {
             BigDecimal yesterdayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
-                yesterday.toString()).getPrice();
+                    yesterday2).get(0).getPrice();
             BigDecimal todayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
-                now.toString()).getPrice();
+                    now).get(0).getPrice();
+
 
             BigDecimal difference = todayPrice.subtract(yesterdayPrice);
-            if(difference.longValue() > 0) {
+            if (difference.longValue() > 0) {
                 upQueue.add(difference);
-            }else if(difference.longValue() < 0) {
+            } else if (difference.longValue() < 0) {
                 downQueue.add(difference);
-            }else {
+            } else {
                 upQueue.add(difference);
                 downQueue.add(difference);
             }
@@ -55,12 +64,12 @@ public class PriceService {
 
     private BigDecimal getAU() {
         BigDecimal upEma = BigDecimal.valueOf(0);
-        if(!CollectionUtils.isEmpty(upQueue)) {
+        if (!CollectionUtils.isEmpty(upQueue)) {
             upEma = upQueue.poll();
-            if(upQueue.size() > 1) {
+            if (upQueue.size() > 1) {
                 for (BigDecimal upElement : upQueue) {
                     upEma = (upElement.multiply(BigDecimal.valueOf(EMA))).add(upEma.multiply(
-                        BigDecimal.valueOf(1-EMA)));
+                            BigDecimal.valueOf(1 - EMA)));
                 }
             }
         }
@@ -69,12 +78,12 @@ public class PriceService {
 
     private BigDecimal getAD() {
         BigDecimal downEma = BigDecimal.valueOf(0);
-        if(!CollectionUtils.isEmpty(downQueue)) {
+        if (!CollectionUtils.isEmpty(downQueue)) {
             downEma = downQueue.poll();
-            if(downQueue.size() > 1) {
+            if (downQueue.size() > 1) {
                 for (BigDecimal downElement : downQueue) {
                     downEma = (downElement.multiply(BigDecimal.valueOf(EMA))).add(downEma.multiply(
-                        BigDecimal.valueOf(1-EMA)));
+                            BigDecimal.valueOf(1 - EMA)));
                 }
             }
         }
