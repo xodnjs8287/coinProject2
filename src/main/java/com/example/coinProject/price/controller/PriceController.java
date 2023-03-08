@@ -1,8 +1,7 @@
 package com.example.coinProject.price.controller;
 
-import com.example.coinProject.price.service.PriceService;
+//import com.example.coinProject.price.service.PriceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/price")
 public class PriceController {
 
-    private final PriceService priceService;
-
-    @GetMapping
-    public Double inquiryRsi() {
-        return priceService.getRsi();
-    }
+//    private final PriceService priceService;
+//
+//    @GetMapping
+//    public Double inquiryRsi() {
+//        return priceService.getRsi();
+//    }
 }
