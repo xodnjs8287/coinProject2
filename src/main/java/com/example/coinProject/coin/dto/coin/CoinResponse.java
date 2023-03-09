@@ -2,7 +2,6 @@ package com.example.coinProject.coin.dto.coin;
 
 import com.example.coinProject.coin.domain.Coin;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class CoinResponse {
 
     private int coinNo;
-
 
     private String market;
     @JsonProperty("korean_name")

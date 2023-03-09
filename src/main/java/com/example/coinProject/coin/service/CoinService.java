@@ -42,9 +42,9 @@ public class CoinService {
                     coinResponse.getEngName(),
                     coinResponse.getKorName());
 
-            Coin save = coinRepository.save(coinRequest.toCoin());
+            Coin coin = coinRepository.save(coinRequest.toCoin());
 
-            coins.add(save);
+            coins.add(coin);
 
         }
 
