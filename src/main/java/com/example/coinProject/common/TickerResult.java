@@ -10,5 +10,5 @@ public class TickerResult {
     private String type;
     private String code;
     @JsonProperty("trade_price")
-    private Double tradePrice;
+    private BigDecimal tradePrice;
 }

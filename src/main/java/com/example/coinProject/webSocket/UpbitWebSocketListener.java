@@ -8,7 +8,6 @@ import com.example.coinProject.common.TradeResult;
 import com.example.coinProject.common.TradeType;
 import com.example.coinProject.common.Type;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.Gson;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 public class UpbitWebSocketListener extends WebSocketListener {
 
     public static final int CODE = 1000;    //기본값으로 정상 종료를 의미함
-    private TradeType tradeType;
+    private TradeType type;
     private String json;
 
     @Override
@@ -54,7 +53,7 @@ public class UpbitWebSocketListener extends WebSocketListener {
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
         log.info(JsonUtil.fromJson(bytes.string(StandardCharsets.UTF_8), JsonNode.class).toPrettyString());
-        switch (tradeType) {
+        switch (type) {
             case TRADE:
                 TradeResult tradeResult = JsonUtil.fromJson(bytes.string(StandardCharsets.UTF_8), TradeResult.class);
                 log.info(tradeResult.toString());
@@ -68,7 +67,7 @@ public class UpbitWebSocketListener extends WebSocketListener {
                 log.info(orderBookResult.toString());
                 break;
             default:
-                log.error("지원하지 않는 웹소켓 조회 유형입니다. : {}", tradeType.getType());
+                log.error("지원하지 않는 웹소켓 조회 유형입니다. : {}", type.getType());
         }
     }
 
@@ -78,8 +77,9 @@ public class UpbitWebSocketListener extends WebSocketListener {
     }
 
     public void setParameters(TradeType type, List<String> codes) {
-        this.tradeType = type;
-        this.json = JsonUtil.toJson(List.of(Ticket.of(UUID.randomUUID().toString()), Type.of(tradeType, codes)));
+        this.type = type;
+        this.json = JsonUtil.toJson(List.of(Ticket.of(UUID.randomUUID().toString()), Type.of(type, codes)));
+        System.out.println("test : " + this.json);
     }
 
     private String getParameter() {
