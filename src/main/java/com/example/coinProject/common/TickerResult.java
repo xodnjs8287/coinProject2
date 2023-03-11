@@ -7,8 +7,13 @@ import lombok.Data;
 @Data
 public class TickerResult {
 
-    private String type;
-    private String code;
+    private String type; // trade
+    private String code; // KRW-BTC
     @JsonProperty("trade_price")
-    private BigDecimal tradePrice;
+    private BigDecimal tradePrice; // 체결 가격
+
+    private String change;
+
+    @JsonProperty("change_price")
+    private BigDecimal changePrice;
 }

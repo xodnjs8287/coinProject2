@@ -2,28 +2,40 @@ package com.example.coinProject.price.service;
 
 import com.example.coinProject.common.TradeType;
 import com.example.coinProject.webSocket.UpbitWebSocketListener;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okio.ByteString;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@Transactional(readOnly = true)
-@RequiredArgsConstructor
-public class TempService {
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
-    public static void main(String[] args) {
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class TradeService {
+
+
+    private UpbitWebSocketListener upbitWebSocketListener;
+
+    @Transactional
+    public BigDecimal getCurrentPrice() {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-            .url("wss://api.upbit.com/websocket/v1")
-            .build();
+                .url("wss://api.upbit.com/websocket/v1")
+                .build();
 
         UpbitWebSocketListener webSocketListener = new UpbitWebSocketListener();
-        webSocketListener.setParameters(TradeType.TRADE, List.of("KRW-BTC"));
+        webSocketListener.setParameters(TradeType.TICKER, List.of("KRW-XRP"));
+
 
         client.newWebSocket(request, webSocketListener);
         client.dispatcher().executorService().shutdown();
+        return webSocketListener.getTradeResult().getTradePrice();
     }
+
+
 }

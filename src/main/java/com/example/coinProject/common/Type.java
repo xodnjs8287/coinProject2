@@ -8,6 +8,6 @@ public class Type {
 
     private final TradeType type;
     private final List<String> codes;
-    private Boolean isOnlySnapShot = false;
-    private Boolean isOnlyRealTime = true;
+//    private Boolean isOnlySnapShot = false;
+//    private Boolean isOnlyRealTime = false;
 }

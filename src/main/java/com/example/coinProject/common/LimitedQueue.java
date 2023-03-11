@@ -1,4 +1,4 @@
-package com.example.coinProject.coin;
+package com.example.coinProject.common;
 
 import java.util.LinkedList;
 

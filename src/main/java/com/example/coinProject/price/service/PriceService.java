@@ -1,6 +1,5 @@
 package com.example.coinProject.price.service;
 
-import com.example.coinProject.coin.LimitedQueue;
 import com.example.coinProject.coin.domain.Coin;
 import com.example.coinProject.coin.repository.CoinRepository;
 import com.example.coinProject.coin.service.Feign;
@@ -26,63 +25,62 @@ public class PriceService {
     private static final double EMA = (double) 1 / 14;
     private final Feign feign;
     private final CoinRepository coinRepository;
-    private final Queue<BigDecimal> upQueue = new LimitedQueue<>(200);
-    private final Queue<BigDecimal> downQueue = new LimitedQueue<>(200);
 
-    @Transactional
-    public Double getRsi() {
-        List<Coin> coins = coinRepository.findAll();
-        String now = LocalDateTime.now().format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        String yesterday = LocalDateTime.now().minusDays(1).format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//    @Transactional
+//    public Double getRsi() {
+//        List<Coin> coins = coinRepository.findAll();
+//        String now = LocalDateTime.now().format(
+//            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//
+//        String yesterday = LocalDateTime.now().minusDays(1).format(
+//            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//
+//        for (Coin coin : coins) {
+//            BigDecimal yesterdayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
+//                yesterday).get(0).getPrice();
+//            BigDecimal todayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
+//                now).get(0).getPrice();
+//
+//            BigDecimal difference = todayPrice.subtract(yesterdayPrice);
+//            if (difference.longValue() > 0) {
+//                upQueue.add(difference);
+//            } else if (difference.longValue() < 0) {
+//                downQueue.add(difference);
+//            } else {
+//                upQueue.add(difference);
+//                downQueue.add(difference);
+//            }
+//        }
+//        double rs = getAU().doubleValue() / getAD().doubleValue();
+//        return 100 - (100 / (rs + 1));
+//    }
 
-        for (Coin coin : coins) {
-            BigDecimal yesterdayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
-                yesterday).get(0).getPrice();
-            BigDecimal todayPrice = feign.getTradePrice(UNIT, coin.getMarket(),
-                now).get(0).getPrice();
+//    private BigDecimal getAU() {
+//        BigDecimal upEma = BigDecimal.valueOf(0);
+//        if (!CollectionUtils.isEmpty(upQueue)) {
+//            upEma = upQueue.poll();
+//            if (upQueue.size() > 1) {
+//                for (BigDecimal upElement : upQueue) {
+//                    upEma = (upElement.multiply(BigDecimal.valueOf(EMA))).add(upEma.multiply(
+//                        BigDecimal.valueOf(1 - EMA)));
+//                }
+//            }
+//        }
+//        return upEma;
+//    }
 
-            BigDecimal difference = todayPrice.subtract(yesterdayPrice);
-            if (difference.longValue() > 0) {
-                upQueue.add(difference);
-            } else if (difference.longValue() < 0) {
-                downQueue.add(difference);
-            } else {
-                upQueue.add(difference);
-                downQueue.add(difference);
-            }
-        }
-        double rs = getAU().doubleValue() / getAD().doubleValue();
-        return 100 - (100 / (rs + 1));
-    }
-
-    private BigDecimal getAU() {
-        BigDecimal upEma = BigDecimal.valueOf(0);
-        if (!CollectionUtils.isEmpty(upQueue)) {
-            upEma = upQueue.poll();
-            if (upQueue.size() > 1) {
-                for (BigDecimal upElement : upQueue) {
-                    upEma = (upElement.multiply(BigDecimal.valueOf(EMA))).add(upEma.multiply(
-                        BigDecimal.valueOf(1 - EMA)));
-                }
-            }
-        }
-        return upEma;
-    }
-
-    private BigDecimal getAD() {
-        BigDecimal downEma = BigDecimal.valueOf(0);
-        if (!CollectionUtils.isEmpty(downQueue)) {
-            downEma = downQueue.poll();
-            if (downQueue.size() > 1) {
-                for (BigDecimal downElement : downQueue) {
-                    downEma = (downElement.multiply(BigDecimal.valueOf(EMA))).add(downEma.multiply(
-                        BigDecimal.valueOf(1 - EMA)));
-                }
-            }
-        }
-        return downEma;
-    }
+//    private BigDecimal getAD() {
+//        BigDecimal downEma = BigDecimal.valueOf(0);
+//        if (!CollectionUtils.isEmpty(downQueue)) {
+//            downEma = downQueue.poll();
+//            if (downQueue.size() > 1) {
+//                for (BigDecimal downElement : downQueue) {
+//                    downEma = (downElement.multiply(BigDecimal.valueOf(EMA))).add(downEma.multiply(
+//                        BigDecimal.valueOf(1 - EMA)));
+//                }
+//            }
+//        }
+//        return downEma;
+//    }
 }
