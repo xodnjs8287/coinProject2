@@ -22,4 +22,9 @@ public class PriceController {
     public Double getCurrentPrice() {
         return tradeService.getCurrentPrice().doubleValue();
     }
+
+    @GetMapping("/rsi")
+    public Double getRsi() {
+        return priceService.getRsi();
+    }
 }
