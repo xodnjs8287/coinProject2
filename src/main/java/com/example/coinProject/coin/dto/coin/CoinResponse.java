@@ -19,6 +19,7 @@ public class CoinResponse {
     @JsonProperty("english_name")
     private String engName;
 
+
     public CoinResponse(Coin coin) {
         this.coinNo = coin.getCoinNo();
         this.market = coin.getMarket();

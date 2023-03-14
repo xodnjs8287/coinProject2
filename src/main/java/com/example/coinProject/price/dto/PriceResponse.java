@@ -13,4 +13,7 @@ public class PriceResponse {
 
     @JsonProperty("trade_price")
     BigDecimal price;
+
+    private Long timestamp;
+
 }

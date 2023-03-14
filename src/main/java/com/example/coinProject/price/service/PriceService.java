@@ -1,8 +1,8 @@
 package com.example.coinProject.price.service;
 
-import com.example.coinProject.coin.repository.CoinRepository;
+import com.example.coinProject.coin.dto.coin.CoinResponse;
+import com.example.coinProject.coin.service.CoinService;
 import com.example.coinProject.coin.service.Feign;
-import com.example.coinProject.common.LimitedQueue;
 import com.example.coinProject.price.dto.PriceResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,94 +19,94 @@ import java.util.List;
 @Slf4j
 public class PriceService {
 
-    private static final String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern(
-        "yyyy-MM-dd HH:mm:ss"));
-    private static final String yesterday = LocalDateTime.now().minusDays(1)
-        .format(DateTimeFormatter.ofPattern(
-            "yyyy-MM-dd HH:mm:ss"));
-    private static final int UNIT = 5;
-    private static final double EMA = (double) 1 / 14;
+    private final CoinService coinService;
+
+    private double day = 14;
+
+    private double average = (double) 1 / (1 + (day - 1));
+    private static final int UNIT = 30;
+
     private static final int COUNT = 200;
 
     private final Feign feign;
-    private final CoinRepository coinRepository;
-    LimitedQueue<BigDecimal> upQueue = new LimitedQueue<>(200);
-    LimitedQueue<BigDecimal> downQueue = new LimitedQueue<>(200);
 
+    private List<Double> upList = new ArrayList<>();
+    private List<Double> downList = new ArrayList<>();
+    private static final double ZERO = 0;
 
-    @Transactional
-    public Double getRsi() {
-        List<PriceResponse> todayPrices = feign.getTradePrice(UNIT, "KRW-BTC",
-            now, COUNT);
-        List<PriceResponse> yesterdayPrices = feign.getTradePrice(UNIT, "KRW-BTC",
-            yesterday, COUNT);
+    public Double getRsi(String market) {
+        List<PriceResponse> tradePrices =
+                feign.getTradePrice(UNIT, market, COUNT).stream().
+                        sorted(Comparator.comparing(PriceResponse::getTimestamp))
+                        .collect(Collectors.toList());
+        for (int i = 0; i < tradePrices.size() - 1; i++) {
+            double gapByTradePrice = tradePrices.get(i + 1).getPrice().doubleValue() - tradePrices.get(i).getPrice().doubleValue();
+            if (gapByTradePrice > 0) {
+                upList.add(gapByTradePrice);
+                downList.add(ZERO);
 
-        for (int i = 0; i < 200; i++) {
-            BigDecimal todayPrice = todayPrices.get(i).getPrice();
-            BigDecimal yesterdayPrice = yesterdayPrices.get(i).getPrice();
-
-            BigDecimal difference = todayPrice.subtract(yesterdayPrice);
-            System.out.println("difference = " + difference);
-            if (difference.longValue() > 0) {
-                upQueue.add(difference);
-                downQueue.add(BigDecimal.valueOf(0));
-            } else if (difference.longValue() < 0) {
-                upQueue.add(BigDecimal.valueOf(0));
-                downQueue.add(difference.abs());
+            } else if (gapByTradePrice < 0) {
+                downList.add(gapByTradePrice * -1);
+                upList.add(ZERO);
             } else {
-                upQueue.add(difference);
-                downQueue.add(difference);
+                upList.add(ZERO);
+                downList.add(ZERO);
             }
         }
-
-        double test = upQueue.stream().mapToDouble(it -> it.doubleValue()).sum() / 200;
-        double test2 = downQueue.stream().mapToDouble(it -> it.doubleValue()).sum() / 200;
-        System.out.println("test = " + test);
-        System.out.println("test2 = " + test2);
-
-        double rs2 = test / test2;
-        double rsi2 = rs2 / (1+rs2);
-        System.out.println("rsi2 = " + rsi2);
-
-        double v = getAU().doubleValue();
-        double v1 = getAD().doubleValue();
-        System.out.println("v = " + v);
-        System.out.println("v1 = " + v1);
-        double rs = getAU().doubleValue() / getAD().doubleValue();
+        double rs = getAU() / getAD();
         return 100 - (100 / (1 + rs));
     }
 
-    private String minusMinute(LocalDateTime date, int unit) {
-        return date.minusMinutes(unit).format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        );
-    }
-
-    private BigDecimal getAU() {
-        BigDecimal upEma = BigDecimal.valueOf(0);
-        if (!CollectionUtils.isEmpty(upQueue)) {
-            upEma = upQueue.poll();
-            if (upQueue.size() > 1) {
-                for (BigDecimal upElement : upQueue) {
-                    upEma = (upElement.multiply(BigDecimal.valueOf(EMA))).add(upEma.multiply(
-                        BigDecimal.valueOf(1 - EMA)));
+    private double getAU() {
+        double upEma = 0;
+        if (!CollectionUtils.isEmpty(upList)) {
+            upEma = upList.get(0).doubleValue();
+            if (upList.size() > 1) {
+                for (int i = 1; i < upList.size(); i++) {
+                    upEma = (upList.get(i).doubleValue() * average) + (upEma * (1 - average));
                 }
             }
         }
         return upEma;
     }
 
-    private BigDecimal getAD() {
-        BigDecimal downEma = BigDecimal.valueOf(0);
-        if (!CollectionUtils.isEmpty(downQueue)) {
-            downEma = downQueue.poll();
-            if (downQueue.size() > 1) {
-                for (BigDecimal downElement : downQueue) {
-                    downEma = (downElement.multiply(BigDecimal.valueOf(EMA))).add(downEma.multiply(
-                        BigDecimal.valueOf(1 - EMA)));
+    private double getAD() {
+        double downEma = 0;
+        if (!CollectionUtils.isEmpty(downList)) {
+            downEma = downList.get(0).doubleValue();
+            if (downList.size() > 1) {
+                for (int i = 1; i < downList.size(); i++) {
+                    downEma = (downList.get(i).doubleValue() * average) + (downEma * (1 - average));
                 }
             }
+
         }
         return downEma;
+    }
+
+
+    public Map<String, Double> getAllMarketsRsi() {
+
+        Map<String, Double> coinsRsi = new HashMap<>();
+
+        List<CoinResponse> coinResponse = coinService.getCoinResponse();
+
+
+        for (int i = 0; i < 38; i++) {
+            if (coinResponse.get(i).getMarket().startsWith("KRW")) {
+
+                Double rsi = getRsi(coinResponse.get(i).getMarket());
+                coinsRsi.put(coinResponse.get(i).getMarket(), rsi);
+
+            }
+        }
+
+
+        // 코인 전체의 rsi 값 가져오기
+
+        return coinsRsi;
+        // 30 이하로 추려내기
+
+
     }
 }

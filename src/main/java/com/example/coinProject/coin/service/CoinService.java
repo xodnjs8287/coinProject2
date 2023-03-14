@@ -37,20 +37,26 @@ public class CoinService {
 
         for (CoinResponse coinResponse : marketCode) {
 
-            CoinRequest coinRequest = new CoinRequest(
-                    coinResponse.getMarket(),
-                    coinResponse.getEngName(),
-                    coinResponse.getKorName());
 
-            Coin coin = coinRepository.save(coinRequest.toCoin());
 
-            coins.add(coin);
+                CoinRequest coinRequest = new CoinRequest(
+                        coinResponse.getMarket(),
+                        coinResponse.getEngName(),
+                        coinResponse.getKorName()
+                );
+
+                Coin coin = coinRepository.save(coinRequest.toCoin());
+
+                coins.add(coin);
+
 
         }
 
         return coins.stream().map(coin -> new CoinResponse(coin)).collect(Collectors.toList());
 
     }
+
+
 
 
 }
